@@ -73,6 +73,26 @@
   .manual-row{display:flex; gap:8px; margin-top:14px;}
   .manual-row input{flex:1;}
 
+  /* ---------- prepínač programu ---------- */
+  .prog-row{display:flex; gap:8px; margin:0 0 14px;}
+  .prog{flex:1; display:flex; align-items:center; justify-content:center; gap:7px;
+    padding:12px 6px; border-radius:14px; background:rgba(255,255,255,.75);
+    border:1.5px solid var(--line); color:var(--muted); font-weight:600; font-size:15px;
+    font-family:var(--ui); cursor:pointer;}
+  .prog svg{width:21px; height:21px;}
+  .prog.active{background:var(--accent); border-color:var(--accent); color:var(--accent-ink);
+    box-shadow:0 6px 16px rgba(147,88,49,.25);}
+  .pline{display:flex; align-items:center; gap:7px; margin-top:6px;}
+  .pline .picon{width:17px; height:17px; color:var(--muted); flex:none; display:block;}
+  .pline .picon svg{width:100%; height:100%; display:block;}
+  .pline .mini-dots{margin-top:0;}
+  .pline .cnt{font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .stats .stat{padding:12px 12px;}
+  .stats .stat b{font-size:27px;}
+  .stats .stat span{font-size:12px;}
+  .cust-actions button{display:flex; align-items:center; justify-content:center; gap:5px;}
+  .cust-actions .act-plus svg{width:15px; height:15px;}
+
   /* ---------- buttons & inputs ---------- */
   button{
     font-family:var(--ui); font-weight:600; font-size:16.5px;
@@ -255,7 +275,8 @@
     <section class="screen active" id="screen-scan">
       <h2>Načítaj kartu zákazníka</h2>
       <svg class="squig" viewBox="0 0 140 26"><use href="#squigPath"/></svg>
-      <p class="sub">Namier kameru na QR kód v mobile zákazníka. Každé načítanie pridá jednu labku.</p>
+      <p class="sub">Vyber, čo účtuješ, a namier kameru na QR kód zákazníka.</p>
+      <div class="prog-row" id="progRow"></div>
       <div class="cam-wrap">
         <video id="video" playsinline muted></video>
         <div class="cam-frame">
@@ -307,8 +328,9 @@
       <h2>Zákazníci</h2>
       <svg class="squig" viewBox="0 0 140 26"><use href="#squigPath"/></svg>
       <div class="stats">
-        <div class="stat"><b id="stCoffees">0</b><span>načítaných káv</span></div>
-        <div class="stat"><b id="stRewards">0</b><span>káv zadarmo</span></div>
+        <div class="stat"><b id="stKava">0</b><span id="stKavaSub">káv</span></div>
+        <div class="stat"><b id="stMlsky">0</b><span id="stMlskySub">mlsiek</span></div>
+        <div class="stat"><b id="stSkolka">0</b><span id="stSkolkaSub">škôlok</span></div>
       </div>
       <ul class="customers" id="custList"></ul>
       <div class="empty" id="custEmpty">Zatiaľ žiadni zákazníci.<br>Vytvor prvú kartu v záložke „Nová karta".</div>
@@ -379,7 +401,7 @@
     <canvas id="ccQr" width="10" height="10"></canvas>
     <div class="who" id="ccWho" hidden></div>
     <div class="code" id="ccCode"></div>
-    <div class="rule">Ukáž túto kartu pri každej káve — <b>každá 11. je zadarmo</b>.</div>
+    <div class="rule">Ukáž túto kartu pri každej návšteve — <b>11. káva</b>, <b>11. mlska</b> aj <b>6. škôlka</b> sú na Nás.</div>
   </div>
   <div class="cc-hint">Pridaj si kartu na plochu: v prehliadači Zdieľať → „Pridať na plochu / domovskú obrazovku".</div>
 </div>
@@ -12790,23 +12812,60 @@ var qrcode = function() {
 </script>
 <script>
 'use strict';
-/* ================= Kávová pečiatka — logika ================= */
+/* ================= Kávová pečiatka — the moment ================= */
 
-const GOAL = 10;             // pečiatok do odmeny
-const COOLDOWN_MS = 45000;   // ochrana pred dvojitým načítaním
+const COOLDOWN_MS = 45000;   // ochrana pred dvojitým načítaním (na program)
 const LS_KEY = 'kavova-peciatka.v1';
 
-const CUP_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><ellipse cx="12" cy="15.6" rx="4.8" ry="3.9"/><ellipse cx="5.4" cy="10.5" rx="2" ry="2.7" transform="rotate(-24 5.4 10.5)"/><ellipse cx="9.6" cy="7.4" rx="2" ry="2.8" transform="rotate(-8 9.6 7.4)"/><ellipse cx="14.4" cy="7.4" rx="2" ry="2.8" transform="rotate(8 14.4 7.4)"/><ellipse cx="18.6" cy="10.5" rx="2" ry="2.7" transform="rotate(24 18.6 10.5)"/></svg>';
+const PAW_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><ellipse cx="12" cy="15.6" rx="4.8" ry="3.9"/><ellipse cx="5.4" cy="10.5" rx="2" ry="2.7" transform="rotate(-24 5.4 10.5)"/><ellipse cx="9.6" cy="7.4" rx="2" ry="2.8" transform="rotate(-8 9.6 7.4)"/><ellipse cx="14.4" cy="7.4" rx="2" ry="2.8" transform="rotate(8 14.4 7.4)"/><ellipse cx="18.6" cy="10.5" rx="2" ry="2.7" transform="rotate(24 18.6 10.5)"/></svg>';
+const CAKE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="3.1" r="1.7"/><path d="M12 4.9c3.4 0 6.2 2.3 6.6 5.3H5.4c.4-3 3.2-5.3 6.6-5.3z"/><path d="M5.4 11.4h13.2l-1.6 7.3a2 2 0 0 1-2 1.6H9a2 2 0 0 1-2-1.6l-1.6-7.3z"/></svg>';
+const BALL_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd"><path d="M12 3.2a8.8 8.8 0 1 1 0 17.6 8.8 8.8 0 0 1 0-17.6zM4.4 8.4c2.5 1.1 4 2.2 4 3.6s-1.5 2.5-4 3.6c-.4-1.1-.6-2.3-.6-3.6s.2-2.5.6-3.6zm15.2 0c.4 1.1.6 2.3.6 3.6s-.2 2.5-.6 3.6c-2.5-1.1-4-2.2-4-3.6s1.5-2.5 4-3.6z"/></svg>';
+
+const PROGRAMS = {
+  kava:  { label: 'Káva',   goal: 10, icon: PAW_SVG,
+           forms: ['káva', 'kávy', 'káv'],
+           readyTitle: 'Ďalšia káva je na Nás',
+           redeemTitle: 'Káva zadarmo uplatnená',
+           redeemSub: 'Dobrú chuť! Počítadlo začína odznova.' },
+  mlsky: { label: 'Mlsky',  goal: 10, icon: CAKE_SVG,
+           forms: ['mlska', 'mlsky', 'mlsiek'],
+           readyTitle: 'Ďalšia mlska je na Nás',
+           redeemTitle: 'Mlska zadarmo uplatnená',
+           redeemSub: 'Dobrú chuť, havko! Počítadlo začína odznova.' },
+  skolka:{ label: 'Škôlka', goal: 5,  icon: BALL_SVG,
+           forms: ['návšteva', 'návštevy', 'návštev'],
+           readyTitle: 'Ďalšia škôlka je na Nás',
+           redeemTitle: 'Škôlka zadarmo uplatnená',
+           redeemSub: 'Počítadlo začína odznova.' }
+};
+function pl(n, f) { return n === 1 ? f[0] : (n >= 2 && n <= 4 ? f[1] : f[2]); }
 
 /* ---------- stav ---------- */
 let state = { cafe: '', autocam: false, customers: {} };
 
+function normCust(c) {
+  if (!c.p) c.p = {};
+  for (const k in PROGRAMS) {
+    if (!c.p[k]) {
+      c.p[k] = (k === 'kava' && typeof c.n === 'number')
+        ? { n: c.n || 0, total: c.total || 0, rewards: c.rewards || 0, last: c.last || 0 }
+        : { n: 0, total: 0, rewards: 0, last: 0 };
+    }
+  }
+  delete c.n; delete c.total; delete c.rewards; delete c.last;
+  return c;
+}
+function normState(s) {
+  s = Object.assign({ cafe: '', autocam: false, customers: {} }, s);
+  for (const id in s.customers) normCust(s.customers[id]);
+  return s;
+}
 function load() {
   try {
     const raw = localStorage.getItem(LS_KEY);
     if (raw) {
       const s = JSON.parse(raw);
-      if (s && typeof s === 'object' && s.customers) state = Object.assign(state, s);
+      if (s && typeof s === 'object' && s.customers) state = normState(s);
     }
   } catch (e) { /* prázdny alebo nedostupný storage */ }
 }
@@ -12844,6 +12903,23 @@ function showTab(name) {
 $('tab-scan').addEventListener('click', () => showTab('scan'));
 $('tab-new').addEventListener('click', () => showTab('new'));
 $('tab-list').addEventListener('click', () => showTab('list'));
+
+/* ---------- prepínač programu na skeneri ---------- */
+let activeProg = 'kava';
+(function initProgRow() {
+  const row = $('progRow');
+  for (const k in PROGRAMS) {
+    const b = document.createElement('button');
+    b.className = 'prog' + (k === activeProg ? ' active' : '');
+    b.dataset.prog = k;
+    b.innerHTML = PROGRAMS[k].icon + '<span>' + PROGRAMS[k].label + '</span>';
+    b.addEventListener('click', () => {
+      activeProg = k;
+      row.querySelectorAll('.prog').forEach(x => x.classList.toggle('active', x.dataset.prog === k));
+    });
+    row.appendChild(b);
+  }
+})();
 
 /* ================= SKENER ================= */
 const video = $('video');
@@ -12940,52 +13016,55 @@ let currentId = null;
 
 function handleCode(text, manual) {
   const id = parseCode(text);
-  if (!id) { openSheet('invalid', null, null); return; }
+  if (!id) { openSheet('invalid', null, null, activeProg); return; }
   let c = state.customers[id];
   if (!c) {
-    c = { name: '', n: 0, total: 0, rewards: 0, created: Date.now(), last: 0 };
+    c = normCust({ name: '', created: Date.now() });
     state.customers[id] = c;
   }
   currentId = id;
   const now = Date.now();
-  if (!manual && c.last && now - c.last < COOLDOWN_MS) {
-    openSheet('cooldown', c, null);
+  if (!manual && c.p[activeProg].last && now - c.p[activeProg].last < COOLDOWN_MS) {
+    openSheet('cooldown', c, null, activeProg);
     return;
   }
-  applyStamp(id, c);
+  applyStamp(id, c, activeProg);
 }
 
-function applyStamp(id, c) {
-  const now = Date.now();
-  c.last = now;
+function applyStamp(id, c, prog) {
+  const P = PROGRAMS[prog];
+  const s = c.p[prog];
+  s.last = Date.now();
   let type, newIndex = null;
-  if (c.n >= GOAL) {           // odmena pripravená → toto načítanie ju uplatní
-    c.n = 0;
-    c.rewards++;
+  if (s.n >= P.goal) {         // odmena pripravená → toto načítanie ju uplatní
+    s.n = 0;
+    s.rewards++;
     type = 'redeem';
   } else {
-    c.n++;
-    c.total++;
-    newIndex = c.n - 1;
-    type = (c.n === GOAL) ? 'ready' : 'stamp';
+    s.n++;
+    s.total++;
+    newIndex = s.n - 1;
+    type = (s.n === P.goal) ? 'ready' : 'stamp';
   }
   save();
   renderHead();
-  openSheet(type, c, newIndex);
+  openSheet(type, c, newIndex, prog);
 }
 
 /* ================= VÝSLEDOK (sheet) ================= */
 let sheetOpen = false;
-function stampGridHTML(n, newIndex) {
+function stampGridHTML(prog, n, newIndex) {
+  const P = PROGRAMS[prog];
   let h = '';
-  for (let i = 0; i < GOAL; i++) {
+  for (let i = 0; i < P.goal; i++) {
     const cls = 'stamp' + (i < n ? ' on' : '') + (i === newIndex ? ' new' : '');
-    h += '<div class="' + cls + '">' + CUP_SVG + '</div>';
+    h += '<div class="' + cls + '">' + P.icon + '</div>';
   }
   return h;
 }
-function openSheet(type, c, newIndex) {
+function openSheet(type, c, newIndex, prog) {
   sheetOpen = true;
+  const P = PROGRAMS[prog];
   const card = $('sheetCard');
   card.classList.toggle('reward', type === 'ready' || type === 'redeem');
   const grid = $('stampGrid');
@@ -12998,20 +13077,22 @@ function openSheet(type, c, newIndex) {
     grid.innerHTML = ''; grid.style.display = 'none';
   } else {
     grid.style.display = '';
-    eyebrow.textContent = custLabel(c, currentId);
-    grid.innerHTML = stampGridHTML(c.n, newIndex);
+    const s = c.p[prog];
+    eyebrow.textContent = custLabel(c, currentId) + ' · ' + P.label;
+    grid.innerHTML = stampGridHTML(prog, s.n, newIndex);
     if (type === 'stamp') {
-      title.textContent = c.n + '. káva';
-      sub.textContent = 'Ešte ' + (GOAL - c.n) + (GOAL - c.n === 1 ? ' kávu' : (GOAL - c.n < 5 ? ' kávy' : ' káv')) + ' a ďalšia je zadarmo.';
+      const left = P.goal - s.n;
+      title.textContent = s.n + '. ' + P.forms[0];
+      sub.textContent = 'Ešte ' + left + ' ' + pl(left, P.forms) + ' a ďalšia je zadarmo.';
     } else if (type === 'ready') {
-      title.textContent = 'Ďalšia káva je na Nás';
-      sub.textContent = 'Desiata pečiatka je tu. Pri ďalšom načítaní karty sa odmena uplatní a zbiera sa odznova.';
+      title.textContent = P.readyTitle;
+      sub.textContent = 'Pri ďalšom načítaní karty sa odmena uplatní a zbiera sa odznova.';
     } else if (type === 'redeem') {
-      title.textContent = 'Káva zadarmo uplatnená';
-      sub.textContent = 'Dobrú chuť! Počítadlo začína odznova.';
+      title.textContent = P.redeemTitle;
+      sub.textContent = P.redeemSub;
     } else if (type === 'cooldown') {
       title.textContent = 'Karta už bola načítaná';
-      sub.textContent = 'Pred chvíľou sa táto karta počítala. Ďalšiu kávu vieš pridať v zozname zákazníkov (+1).';
+      sub.textContent = 'Pred chvíľou sa v programe ' + P.label + ' táto karta počítala. Ďalšiu vieš pridať v zozname zákazníkov (+1).';
     }
   }
   $('sheet').classList.add('open');
@@ -13045,7 +13126,7 @@ let lastCreated = null;
 $('btnNew').addEventListener('click', () => {
   const id = newId();
   const name = $('newName').value.trim();
-  state.customers[id] = { name: name, n: 0, total: 0, rewards: 0, created: Date.now(), last: 0 };
+  state.customers[id] = normCust({ name: name, created: Date.now() });
   lastCreated = { id: id, name: name };
   save();
   renderHead();
@@ -13099,36 +13180,52 @@ function renderHead() {
   const n = Object.keys(state.customers).length;
   $('headCount').textContent = n + (n === 1 ? ' zákazník' : (n >= 2 && n <= 4 ? ' zákazníci' : ' zákazníkov'));
 }
-function miniDots(n) {
+function miniDots(prog, n) {
+  const P = PROGRAMS[prog];
   let h = '';
-  for (let i = 0; i < GOAL; i++) h += '<span class="mp' + (i < n ? ' on' : '') + '">' + CUP_SVG + '</span>';
+  for (let i = 0; i < P.goal; i++) h += '<span class="mp' + (i < n ? ' on' : '') + '">' + P.icon + '</span>';
   return h;
 }
+function lastTouch(c) {
+  let m = c.created || 0;
+  for (const k in PROGRAMS) m = Math.max(m, c.p[k].last || 0);
+  return m;
+}
 function renderList() {
-  const ids = Object.keys(state.customers).sort((a, b) => (state.customers[b].last || state.customers[b].created) - (state.customers[a].last || state.customers[a].created));
-  let coffees = 0, rewards = 0;
+  const ids = Object.keys(state.customers).sort((a, b) => lastTouch(state.customers[b]) - lastTouch(state.customers[a]));
+  const tot = { kava: { t: 0, r: 0 }, mlsky: { t: 0, r: 0 }, skolka: { t: 0, r: 0 } };
   const ul = $('custList');
   ul.innerHTML = '';
   for (const id of ids) {
     const c = state.customers[id];
-    coffees += c.total; rewards += c.rewards;
+    let plines = '';
+    for (const k in PROGRAMS) {
+      const s = c.p[k];
+      tot[k].t += s.total; tot[k].r += s.rewards;
+      plines += '<div class="pline"><span class="picon">' + PROGRAMS[k].icon + '</span>' +
+        '<span class="mini-dots">' + miniDots(k, s.n) + '</span>' +
+        '<span class="cnt">' + s.n + '/' + PROGRAMS[k].goal + (s.rewards ? ' · ' + s.rewards + ' zadarmo' : '') + '</span></div>';
+    }
     const li = document.createElement('li');
     li.innerHTML =
       '<div class="cust-main">' +
         '<div class="cust-name"></div>' +
-        '<div class="cust-meta">' + fmtId(id) + ' · ' + c.total + ' káv · ' + c.rewards + ' zadarmo</div>' +
-        '<div class="mini-dots">' + miniDots(c.n) + '</div>' +
+        '<div class="cust-meta">' + fmtId(id) + '</div>' +
+        plines +
       '</div>' +
-      '<div class="cust-count">' + c.n + '/' + GOAL + '</div>' +
       '<div class="cust-actions">' +
-        '<button class="small ghost act-plus">+1</button>' +
+        '<button class="small ghost act-plus" data-prog="kava">' + PAW_SVG + '+1</button>' +
+        '<button class="small ghost act-plus" data-prog="mlsky">' + CAKE_SVG + '+1</button>' +
+        '<button class="small ghost act-plus" data-prog="skolka">' + BALL_SVG + '+1</button>' +
         '<button class="small ghost act-del danger">Zmazať</button>' +
       '</div>';
     li.querySelector('.cust-name').textContent = custLabel(c, id);
-    li.querySelector('.act-plus').addEventListener('click', () => {
-      currentId = id;
-      applyStamp(id, c);
-      renderList();
+    li.querySelectorAll('.act-plus').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentId = id;
+        applyStamp(id, c, btn.dataset.prog);
+        renderList();
+      });
     });
     const del = li.querySelector('.act-del');
     del.addEventListener('click', () => {
@@ -13153,8 +13250,12 @@ function renderList() {
     ul.appendChild(li);
   }
   $('custEmpty').style.display = ids.length ? 'none' : '';
-  $('stCoffees').textContent = coffees;
-  $('stRewards').textContent = rewards;
+  $('stKava').textContent = tot.kava.t;
+  $('stKavaSub').textContent = pl(tot.kava.t, ['káva', 'kávy', 'káv']) + ' · ' + tot.kava.r + ' zadarmo';
+  $('stMlsky').textContent = tot.mlsky.t;
+  $('stMlskySub').textContent = pl(tot.mlsky.t, ['mlska', 'mlsky', 'mlsiek']) + ' · ' + tot.mlsky.r + ' zadarmo';
+  $('stSkolka').textContent = tot.skolka.t;
+  $('stSkolkaSub').textContent = pl(tot.skolka.t, ['škôlka', 'škôlky', 'škôlok']) + ' · ' + tot.skolka.r + ' zadarmo';
 }
 
 /* ---------- nastavenia + záloha ---------- */
@@ -13182,7 +13283,7 @@ $('btnImport').addEventListener('click', () => {
   try {
     const s = JSON.parse($('backupBox').value);
     if (!s || typeof s !== 'object' || typeof s.customers !== 'object') throw new Error('bad');
-    state = Object.assign({ cafe: '', autocam: false, customers: {} }, s);
+    state = normState(s);
     save(); renderHead(); renderList();
     $('cafeName').value = state.cafe || '';
     $('backupBox').hidden = true; $('btnImport').hidden = true;
