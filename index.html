@@ -78,12 +78,12 @@
   .manual-row input{flex:1;}
 
   /* ---------- prepínač programu ---------- */
-  .prog-row{display:flex; gap:8px; margin:0 0 14px;}
-  .prog{flex:1; display:flex; align-items:center; justify-content:center; gap:7px;
+  .prog-row{display:grid; gap:8px; margin:0 0 14px;}
+  .prog{display:flex; align-items:center; justify-content:center; gap:7px;
     padding:12px 6px; border-radius:14px; background:rgba(255,255,255,.75);
-    border:1.5px solid var(--line); color:var(--muted); font-weight:600; font-size:15px;
-    font-family:var(--ui); cursor:pointer;}
-  .prog svg{width:21px; height:21px;}
+    border:1.5px solid var(--line); color:var(--muted); font-weight:600; font-size:14.5px;
+    font-family:var(--ui); cursor:pointer; white-space:nowrap;}
+  .prog svg{width:20px; height:20px; flex:none;}
   .prog.active{background:var(--accent); border-color:var(--accent); color:var(--accent-ink);
     box-shadow:0 6px 16px rgba(147,88,49,.25);}
   .pline{display:flex; align-items:center; gap:7px; margin-top:6px;}
@@ -91,8 +91,9 @@
   .pline .picon svg{width:100%; height:100%; display:block;}
   .pline .mini-dots{margin-top:0;}
   .pline .cnt{font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap;}
-  .stats .stat{padding:12px 12px;}
-  .stats .stat b{font-size:27px;}
+  .stats{flex-wrap:wrap;}
+  .stats .stat{padding:12px 12px; flex:1 1 40%;}
+  .stats .stat b{font-size:24px;}
   .stats .stat span{font-size:12px;}
   .cust-actions button{display:flex; align-items:center; justify-content:center; gap:5px;}
   .cust-actions .act-plus svg{width:15px; height:15px;}
@@ -331,11 +332,7 @@
     <section class="screen" id="screen-list">
       <h2>Zákazníci</h2>
       <svg class="squig" viewBox="0 0 140 26"><use href="#squigPath"/></svg>
-      <div class="stats">
-        <div class="stat"><b id="stKava">0</b><span id="stKavaSub">káv</span></div>
-        <div class="stat"><b id="stMlsky">0</b><span id="stMlskySub">mlsiek</span></div>
-        <div class="stat"><b id="stSkolka">0</b><span id="stSkolkaSub">škôlok</span></div>
-      </div>
+      <div class="stats" id="statsRow"></div>
       <ul class="customers" id="custList"></ul>
       <div class="empty" id="custEmpty">Zatiaľ žiadni zákazníci.<br>Vytvor prvú kartu v záložke „Nová karta".</div>
       <details class="backup">
@@ -12824,6 +12821,7 @@ const LS_KEY = 'kavova-peciatka.v1';
 const PAW_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><ellipse cx="12" cy="15.6" rx="4.8" ry="3.9"/><ellipse cx="5.4" cy="10.5" rx="2" ry="2.7" transform="rotate(-24 5.4 10.5)"/><ellipse cx="9.6" cy="7.4" rx="2" ry="2.8" transform="rotate(-8 9.6 7.4)"/><ellipse cx="14.4" cy="7.4" rx="2" ry="2.8" transform="rotate(8 14.4 7.4)"/><ellipse cx="18.6" cy="10.5" rx="2" ry="2.7" transform="rotate(24 18.6 10.5)"/></svg>';
 const CAKE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="3.1" r="1.7"/><path d="M12 4.9c3.4 0 6.2 2.3 6.6 5.3H5.4c.4-3 3.2-5.3 6.6-5.3z"/><path d="M5.4 11.4h13.2l-1.6 7.3a2 2 0 0 1-2 1.6H9a2 2 0 0 1-2-1.6l-1.6-7.3z"/></svg>';
 const BALL_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd"><path d="M12 3.2a8.8 8.8 0 1 1 0 17.6 8.8 8.8 0 0 1 0-17.6zM4.4 8.4c2.5 1.1 4 2.2 4 3.6s-1.5 2.5-4 3.6c-.4-1.1-.6-2.3-.6-3.6s.2-2.5.6-3.6zm15.2 0c.4 1.1.6 2.3.6 3.6s-.2 2.5-.6 3.6c-2.5-1.1-4-2.2-4-3.6s1.5-2.5 4-3.6z"/></svg>';
+const TONIC_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7.3 4.5h9.4l-1.4 15a2 2 0 0 1-2 1.8h-2.6a2 2 0 0 1-2-1.8l-1.4-15z"/><path d="M6.9 3.5h10.2" stroke-width="2"/><circle cx="10.3" cy="9.4" r=".9" fill="currentColor" stroke="none"/><circle cx="13.6" cy="12.6" r=".7" fill="currentColor" stroke="none"/><circle cx="10.7" cy="15.3" r=".8" fill="currentColor" stroke="none"/><circle cx="13.9" cy="8" r=".6" fill="currentColor" stroke="none"/><path d="M8.7 9.7l1.7 1.7-1.7 1.7M13.4 15.6l1.7 1.7-1.7 1.7" stroke-width="1.4" opacity=".55"/></svg>';
 
 const PROGRAMS = {
   kava:  { label: 'Káva',   goal: 10, icon: PAW_SVG,
@@ -12840,7 +12838,12 @@ const PROGRAMS = {
            forms: ['návšteva', 'návštevy', 'návštev'],
            readyTitle: 'Ďalšia škôlka je na Nás',
            redeemTitle: 'Škôlka zadarmo uplatnená',
-           redeemSub: 'Počítadlo začína odznova.' }
+           redeemSub: 'Počítadlo začína odznova.' },
+  tonic: { label: 'Espresso tonic', short: 'Tonic', goal: 9, icon: TONIC_SVG,
+           forms: ['espresso tonic', 'espresso toniky', 'espresso tonikov'],
+           readyTitle: 'Ďalší espresso tonic je na Nás',
+           redeemTitle: 'Espresso tonic zadarmo uplatnený',
+           redeemSub: 'Dobrú chuť! Počítadlo začína odznova.' }
 };
 function pl(n, f) { return n === 1 ? f[0] : (n >= 2 && n <= 4 ? f[1] : f[2]); }
 
@@ -12912,11 +12915,13 @@ $('tab-list').addEventListener('click', () => showTab('list'));
 let activeProg = 'kava';
 (function initProgRow() {
   const row = $('progRow');
-  for (const k in PROGRAMS) {
+  const keys = Object.keys(PROGRAMS);
+  row.style.gridTemplateColumns = 'repeat(' + (keys.length <= 3 ? keys.length : 2) + ', 1fr)';
+  for (const k of keys) {
     const b = document.createElement('button');
     b.className = 'prog' + (k === activeProg ? ' active' : '');
     b.dataset.prog = k;
-    b.innerHTML = PROGRAMS[k].icon + '<span>' + PROGRAMS[k].label + '</span>';
+    b.innerHTML = PROGRAMS[k].icon + '<span>' + (PROGRAMS[k].short || PROGRAMS[k].label) + '</span>';
     b.addEventListener('click', () => {
       activeProg = k;
       row.querySelectorAll('.prog').forEach(x => x.classList.toggle('active', x.dataset.prog === k));
@@ -13197,7 +13202,10 @@ function lastTouch(c) {
 }
 function renderList() {
   const ids = Object.keys(state.customers).sort((a, b) => lastTouch(state.customers[b]) - lastTouch(state.customers[a]));
-  const tot = { kava: { t: 0, r: 0 }, mlsky: { t: 0, r: 0 }, skolka: { t: 0, r: 0 } };
+  const tot = {};
+  for (const k in PROGRAMS) tot[k] = { t: 0, r: 0 };
+  const plusBtns = Object.keys(PROGRAMS).map(k =>
+    '<button class="small ghost act-plus" data-prog="' + k + '">' + PROGRAMS[k].icon + '+1</button>').join('');
   const ul = $('custList');
   ul.innerHTML = '';
   for (const id of ids) {
@@ -13218,9 +13226,7 @@ function renderList() {
         plines +
       '</div>' +
       '<div class="cust-actions">' +
-        '<button class="small ghost act-plus" data-prog="kava">' + PAW_SVG + '+1</button>' +
-        '<button class="small ghost act-plus" data-prog="mlsky">' + CAKE_SVG + '+1</button>' +
-        '<button class="small ghost act-plus" data-prog="skolka">' + BALL_SVG + '+1</button>' +
+        plusBtns +
         '<button class="small ghost act-del danger">Zmazať</button>' +
       '</div>';
     li.querySelector('.cust-name').textContent = custLabel(c, id);
@@ -13254,12 +13260,11 @@ function renderList() {
     ul.appendChild(li);
   }
   $('custEmpty').style.display = ids.length ? 'none' : '';
-  $('stKava').textContent = tot.kava.t;
-  $('stKavaSub').textContent = pl(tot.kava.t, ['káva', 'kávy', 'káv']) + ' · ' + tot.kava.r + ' zadarmo';
-  $('stMlsky').textContent = tot.mlsky.t;
-  $('stMlskySub').textContent = pl(tot.mlsky.t, ['mlska', 'mlsky', 'mlsiek']) + ' · ' + tot.mlsky.r + ' zadarmo';
-  $('stSkolka').textContent = tot.skolka.t;
-  $('stSkolkaSub').textContent = pl(tot.skolka.t, ['škôlka', 'škôlky', 'škôlok']) + ' · ' + tot.skolka.r + ' zadarmo';
+  const statsRow = $('statsRow');
+  statsRow.innerHTML = Object.keys(PROGRAMS).map(k => {
+    const P = PROGRAMS[k], t = tot[k];
+    return '<div class="stat"><b>' + t.t + '</b><span>' + pl(t.t, P.forms) + ' · ' + t.r + ' zadarmo</span></div>';
+  }).join('');
 }
 
 /* ---------- nastavenia + záloha ---------- */
