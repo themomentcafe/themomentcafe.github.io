@@ -12822,6 +12822,7 @@ const PAW_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><ellipse cx="12" c
 const CAKE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="3.1" r="1.7"/><path d="M12 4.9c3.4 0 6.2 2.3 6.6 5.3H5.4c.4-3 3.2-5.3 6.6-5.3z"/><path d="M5.4 11.4h13.2l-1.6 7.3a2 2 0 0 1-2 1.6H9a2 2 0 0 1-2-1.6l-1.6-7.3z"/></svg>';
 const BALL_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd"><path d="M12 3.2a8.8 8.8 0 1 1 0 17.6 8.8 8.8 0 0 1 0-17.6zM4.4 8.4c2.5 1.1 4 2.2 4 3.6s-1.5 2.5-4 3.6c-.4-1.1-.6-2.3-.6-3.6s.2-2.5.6-3.6zm15.2 0c.4 1.1.6 2.3.6 3.6s-.2 2.5-.6 3.6c-2.5-1.1-4-2.2-4-3.6s1.5-2.5 4-3.6z"/></svg>';
 const TONIC_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7.3 4.5h9.4l-1.4 15a2 2 0 0 1-2 1.8h-2.6a2 2 0 0 1-2-1.8l-1.4-15z"/><path d="M6.9 3.5h10.2" stroke-width="2"/><circle cx="10.3" cy="9.4" r=".9" fill="currentColor" stroke="none"/><circle cx="13.6" cy="12.6" r=".7" fill="currentColor" stroke="none"/><circle cx="10.7" cy="15.3" r=".8" fill="currentColor" stroke="none"/><circle cx="13.9" cy="8" r=".6" fill="currentColor" stroke="none"/><path d="M8.7 9.7l1.7 1.7-1.7 1.7M13.4 15.6l1.7 1.7-1.7 1.7" stroke-width="1.4" opacity=".55"/></svg>';
+const MILK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5.3 8.6h11.4l-1 8.4a2.2 2.2 0 0 1-2.2 2H8.5a2.2 2.2 0 0 1-2.2-2l-1-8.4z"/><path d="M16.5 9.7h1.6a2.3 2.3 0 0 1 0 4.6h-1.6"/><path d="M11 10.5c-1.1-1-2.3-.5-2.3.5s1 1.4 2.3 2.4c1.3-1 2.3-1.4 2.3-2.4s-1.2-1.5-2.3-.5z" fill="currentColor" stroke="none"/></svg>';
 
 const PROGRAMS = {
   kava:  { label: 'Káva',   goal: 10, icon: PAW_SVG,
@@ -12843,6 +12844,11 @@ const PROGRAMS = {
            forms: ['espresso tonic', 'espresso toniky', 'espresso tonikov'],
            readyTitle: 'Ďalší espresso tonic je na Nás',
            redeemTitle: 'Espresso tonic zadarmo uplatnený',
+           redeemSub: 'Dobrú chuť! Počítadlo začína odznova.' },
+  mliecna:{ label: 'Mliečna káva', short: 'Mliečna', goal: 10, icon: MILK_SVG,
+           forms: ['mliečna káva', 'mliečne kávy', 'mliečnych káv'],
+           readyTitle: 'Ďalšia mliečna káva je na Nás',
+           redeemTitle: 'Mliečna káva zadarmo uplatnená',
            redeemSub: 'Dobrú chuť! Počítadlo začína odznova.' }
 };
 function pl(n, f) { return n === 1 ? f[0] : (n >= 2 && n <= 4 ? f[1] : f[2]); }
@@ -12916,7 +12922,8 @@ let activeProg = 'kava';
 (function initProgRow() {
   const row = $('progRow');
   const keys = Object.keys(PROGRAMS);
-  row.style.gridTemplateColumns = 'repeat(' + (keys.length <= 3 ? keys.length : 2) + ', 1fr)';
+  const cols = keys.length <= 3 ? keys.length : (keys.length === 4 ? 2 : 3);
+  row.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
   for (const k of keys) {
     const b = document.createElement('button');
     b.className = 'prog' + (k === activeProg ? ' active' : '');
