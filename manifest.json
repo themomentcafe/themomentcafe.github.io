@@ -1,7 +1,6 @@
 {
   "name": "the moment",
   "short_name": "the moment",
-  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#faf7f2",

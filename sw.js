@@ -1,4 +1,4 @@
-const C = 'themoment-v1';
+const C = 'themoment-v2';
 self.addEventListener('install', e => {
   self.skipWaiting();
   e.waitUntil(caches.open(C).then(c => c.addAll(['./', 'icon.png', 'icon-192.png'])).catch(() => {}));

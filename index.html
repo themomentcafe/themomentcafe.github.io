@@ -487,7 +487,7 @@
     <div class="who" id="ccWho" hidden></div>
     <div class="code" id="ccCode"></div>
     <div class="cc-progress" id="ccProgress"></div>
-    <div class="rule">Ukáž kartu pri každej návšteve — <b>11. káva</b>, <b>11. mlska</b>, <b>11. mliečna</b>, <b>10. espresso tonic</b> aj <b>6. škôlka</b> sú na Nás.</div>
+    <div class="rule">Ukáž kartu pri každej návšteve — <b>7. káva</b>, <b>5. mlska</b> aj <b>6. škôlka</b> sú na Nás.</div>
     <a class="cc-channel" id="ccChannel" hidden target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4a1 1 0 0 0 1 1h2l5 4V5L7 9H5a1 1 0 0 0-1 1z" fill="currentColor" stroke="none"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>Odoberaj novinky z kaviarne</a>
   </div>
   <div class="install-box" id="installBox" hidden>
@@ -12953,16 +12953,15 @@ const MIGRATED_KEY = 'tm.migrated';
 const PAW_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><ellipse cx="12" cy="15.6" rx="4.8" ry="3.9"/><ellipse cx="5.4" cy="10.5" rx="2" ry="2.7" transform="rotate(-24 5.4 10.5)"/><ellipse cx="9.6" cy="7.4" rx="2" ry="2.8" transform="rotate(-8 9.6 7.4)"/><ellipse cx="14.4" cy="7.4" rx="2" ry="2.8" transform="rotate(8 14.4 7.4)"/><ellipse cx="18.6" cy="10.5" rx="2" ry="2.7" transform="rotate(24 18.6 10.5)"/></svg>';
 const CAKE_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="3.1" r="1.7"/><path d="M12 4.9c3.4 0 6.2 2.3 6.6 5.3H5.4c.4-3 3.2-5.3 6.6-5.3z"/><path d="M5.4 11.4h13.2l-1.6 7.3a2 2 0 0 1-2 1.6H9a2 2 0 0 1-2-1.6l-1.6-7.3z"/></svg>';
 const BALL_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd"><path d="M12 3.2a8.8 8.8 0 1 1 0 17.6 8.8 8.8 0 0 1 0-17.6zM4.4 8.4c2.5 1.1 4 2.2 4 3.6s-1.5 2.5-4 3.6c-.4-1.1-.6-2.3-.6-3.6s.2-2.5.6-3.6zm15.2 0c.4 1.1.6 2.3.6 3.6s-.2 2.5-.6 3.6c-2.5-1.1-4-2.2-4-3.6s1.5-2.5 4-3.6z"/></svg>';
-const TONIC_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7.3 4.5h9.4l-1.4 15a2 2 0 0 1-2 1.8h-2.6a2 2 0 0 1-2-1.8l-1.4-15z"/><path d="M6.9 3.5h10.2" stroke-width="2"/><circle cx="10.3" cy="9.4" r=".9" fill="currentColor" stroke="none"/><circle cx="13.6" cy="12.6" r=".7" fill="currentColor" stroke="none"/><circle cx="10.7" cy="15.3" r=".8" fill="currentColor" stroke="none"/><circle cx="13.9" cy="8" r=".6" fill="currentColor" stroke="none"/><path d="M8.7 9.7l1.7 1.7-1.7 1.7M13.4 15.6l1.7 1.7-1.7 1.7" stroke-width="1.4" opacity=".55"/></svg>';
-const MILK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5.3 8.6h11.4l-1 8.4a2.2 2.2 0 0 1-2.2 2H8.5a2.2 2.2 0 0 1-2.2-2l-1-8.4z"/><path d="M16.5 9.7h1.6a2.3 2.3 0 0 1 0 4.6h-1.6"/><path d="M11 10.5c-1.1-1-2.3-.5-2.3.5s1 1.4 2.3 2.4c1.3-1 2.3-1.4 2.3-2.4s-1.2-1.5-2.3-.5z" fill="currentColor" stroke="none"/></svg>';
 
+// goal = koľko pečiatok sa zbiera; nasledujúca je zadarmo (káva 6 → 7. zadarmo, mlsky 4 → 5., škôlka 5 → 6.)
 const PROGRAMS = {
-  kava:  { label: 'Káva',   goal: 10, icon: PAW_SVG,
+  kava:  { label: 'Káva',   goal: 6, icon: PAW_SVG,
            forms: ['káva', 'kávy', 'káv'],
            readyTitle: 'Ďalšia káva je na Nás',
            redeemTitle: 'Káva zadarmo uplatnená',
            redeemSub: 'Dobrú chuť! Počítadlo začína odznova.' },
-  mlsky: { label: 'Mlsky',  goal: 10, icon: CAKE_SVG,
+  mlsky: { label: 'Mlsky',  goal: 4, icon: CAKE_SVG,
            forms: ['mlska', 'mlsky', 'mlsiek'],
            readyTitle: 'Ďalšia mlska je na Nás',
            redeemTitle: 'Mlska zadarmo uplatnená',
@@ -12971,18 +12970,9 @@ const PROGRAMS = {
            forms: ['návšteva', 'návštevy', 'návštev'],
            readyTitle: 'Ďalšia škôlka je na Nás',
            redeemTitle: 'Škôlka zadarmo uplatnená',
-           redeemSub: 'Počítadlo začína odznova.' },
-  tonic: { label: 'Espresso tonic', short: 'Tonic', goal: 9, icon: TONIC_SVG,
-           forms: ['espresso tonic', 'espresso toniky', 'espresso tonikov'],
-           readyTitle: 'Ďalší espresso tonic je na Nás',
-           redeemTitle: 'Espresso tonic zadarmo uplatnený',
-           redeemSub: 'Dobrú chuť! Počítadlo začína odznova.' },
-  mliecna:{ label: 'Mliečna káva', short: 'Mliečna', goal: 10, icon: MILK_SVG,
-           forms: ['mliečna káva', 'mliečne kávy', 'mliečnych káv'],
-           readyTitle: 'Ďalšia mliečna káva je na Nás',
-           redeemTitle: 'Mliečna káva zadarmo uplatnená',
-           redeemSub: 'Dobrú chuť! Počítadlo začína odznova.' }
+           redeemSub: 'Počítadlo začína odznova.' }
 };
+function shown(n, goal) { return Math.min(n, goal); }   // staré karty môžu mať viac pečiatok než nový cieľ
 function pl(n, f) { return n === 1 ? f[0] : (n >= 2 && n <= 4 ? f[1] : f[2]); }
 function emptyProg() { return { n: 0, total: 0, rewards: 0, last: 0 }; }
 function emptyCardData(name) {
@@ -13050,11 +13040,17 @@ function showView(name) {
   for (const v of VIEWS) { const el = $(v); if (el) el.hidden = (v !== name); }
   $('app').style.display = (name === 'app') ? '' : 'none';
 }
+// Karta je v adrese ako ?k=KÓD — ikona na ploche (iPhone aj Android) si tak pamätá konkrétnu kartu,
+// aj keď appka z plochy nevidí úložisko prehliadača.
+function cleanId(v) { return (v || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+function cardUrl(id) { return location.href.split(/[?#]/)[0] + '?k=' + id; }
 function parseHash() {
+  const qid = cleanId(new URLSearchParams(location.search).get('k'));
+  if (qid.length === 8) return { mode: 'card', id: qid };
   const h = new URLSearchParams(location.hash.slice(1));
   if (h.has('k')) {
-    const id = (h.get('k') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-    if (id.length === 8) return { mode: 'card', id: id };
+    const id = cleanId(h.get('k'));
+    if (id.length === 8) return { mode: 'legacy', id: id };   // staré odkazy #k=
   }
   if (location.hash.replace('#', '') === 'novy') return { mode: 'landing' };
   if (location.hash.replace('#', '') === 'admin') return { mode: 'admin' };
@@ -13066,6 +13062,7 @@ function route() {
   stopCamera();
   if (unsubCustomer) { unsubCustomer(); unsubCustomer = null; }
   cardMode = (r.mode === 'card');
+  if (r.mode === 'legacy') { location.replace(cardUrl(r.id)); return; }
   if (r.mode === 'card') {
     if (!user) lsSet(MYCARD_KEY, r.id);
     renderCustomerCard(r.id);
@@ -13080,7 +13077,7 @@ function route() {
   // home: majiteľka → appka; zákazník s kartou → jeho karta; inak landing
   if (user) { enterOwner(); return; }
   const my = lsGet(MYCARD_KEY);
-  if (my && my.length === 8) { location.hash = '#k=' + my; return; }
+  if (my && my.length === 8) { location.replace(cardUrl(my)); return; }
   showView('landing');
 }
 window.addEventListener('hashchange', route);
@@ -13342,6 +13339,8 @@ function openSheet(type, c, newIndex, prog) {
     grid.style.display = '';
     const s = c.p[prog];
     eyebrow.textContent = custLabel(c, currentId) + ' · ' + P.label;
+    grid.style.gridTemplateColumns = 'repeat(' + P.goal + ', 1fr)';
+    grid.style.maxWidth = Math.min(360, P.goal * 66) + 'px';
     grid.innerHTML = stampGridHTML(prog, s.n, newIndex);
     if (type === 'stamp') {
       const left = P.goal - s.n;
@@ -13405,7 +13404,7 @@ $('btnAnother').addEventListener('click', function() {
   $('qrActions').hidden = true;
   $('newName').focus();
 });
-function cardLink(id) { return location.origin + location.pathname + '#k=' + id; }
+function cardLink(id) { return cardUrl(id); }
 $('btnLink').addEventListener('click', async function() {
   if (!lastCreated) return;
   const u = cardLink(lastCreated.id);
@@ -13465,7 +13464,7 @@ function renderList() {
       tot[k].t += s.total; tot[k].r += s.rewards;
       plines += '<div class="pline"><span class="picon">' + PROGRAMS[k].icon + '</span>' +
         '<span class="mini-dots">' + miniDots(k, s.n) + '</span>' +
-        '<span class="cnt">' + s.n + '/' + PROGRAMS[k].goal + (s.rewards ? ' · ' + s.rewards + ' zadarmo' : '') + '</span></div>';
+        '<span class="cnt">' + shown(s.n, PROGRAMS[k].goal) + '/' + PROGRAMS[k].goal + (s.rewards ? ' · ' + s.rewards + ' zadarmo' : '') + '</span></div>';
     }
     const li = document.createElement('li');
     li.innerHTML =
@@ -13625,7 +13624,7 @@ function ccProgressHTML(c) {
       '<div class="ccp-mid"><div class="ccp-label">' + P.label +
         (ready ? ' — <b>ďalšia je zadarmo!</b>' : '') + '</div>' +
         '<div class="mini-dots ccp-dots">' + dots + '</div></div>' +
-      '<span class="ccp-cnt">' + s.n + '/' + P.goal + '</span></div>';
+      '<span class="ccp-cnt">' + shown(s.n, P.goal) + '/' + P.goal + '</span></div>';
   }
   return h;
 }
@@ -13658,7 +13657,7 @@ $('btnSelf').addEventListener('click', async function() {
   try {
     await db.collection('cards').doc(id).set(emptyCardData(name));
     lsSet(MYCARD_KEY, id);
-    location.hash = '#k=' + id;
+    location.replace(cardUrl(id));
   } catch (e) {
     $('selfErr').textContent = 'Nepodarilo sa vytvoriť kartu — skontroluj pripojenie a skús znova.';
     $('btnSelf').disabled = false;
